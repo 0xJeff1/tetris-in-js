@@ -26,4 +26,10 @@
 .cell {
     width: 30px;
     height: 30px;
+    border-radius: 3px;
+}
+
+.colored{
+    /* background-color: red; */
+    border: 1px #1d1e22 solid;
   }
