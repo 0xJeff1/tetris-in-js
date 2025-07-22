@@ -99,19 +99,12 @@ function render()
       cellsarray[shape[i]].classList.add('colored');
       cellsarray[shape[i]].style.backgroundColor= col;
   }
+  return(shape);
 }
 
-function gravity()
-[
-  
-]
 
-let j = 0;
-while(j < 5)
-{
-  render();
-  gravity();
-}
+ render();
+ 
 
 
 
