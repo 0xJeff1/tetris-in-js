@@ -1,0 +1,29 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+.container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #131519;
+}
+
+.playground{
+    background-color: #1d1e22;
+    height: 560px;
+    width: 300px;
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(20, 28px);
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+  }
