@@ -86,24 +86,66 @@ const sTetromino = [
 
 const theTetrominoes = [lTetromino, zTetromino, tTetromino, oTetromino, iTetromino, jTetromino, sTetromino];
 
-
+let currentposition = 4;
+const hel = Math.floor(Math.random() * 7);
 
 function render()
 {
-  const hel = Math.floor(Math.random() * 7);
 
   let shape = theTetrominoes[hel][0];
   
   for(let i = 0 ; i < shape.length ; i++)
   {
-      cellsarray[shape[i]].classList.add('colored');
-      cellsarray[shape[i]].style.backgroundColor= col;
+      cellsarray[shape[i] + currentposition].classList.add('colored');
+      cellsarray[shape[i] + currentposition].style.backgroundColor= col;
   }
   return(shape);
 }
 
+// function undraw(shape)
+// {
+//   for(let i = 0 ; i < shape.length ; i++)
+//     {
+//         cellsarray[shape[i] + currentposition].classList.remove('colored');
+//         cellsarray[shape[i] + currentposition].style.backgroundColor= 'none';
+//     }
+//     return(shape);
+// }
 
- render();
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function run() 
+{
+  let i = 0;
+  const width = 10;
+
+  while (i < 20) {
+    let ships = render();      // draw shape
+    // undraw(ships);         // optional: remove shape
+    currentposition += width;  // move down
+    console.log(currentposition);
+    i++;
+    await sleep(700);          // wait 700ms (not 7 million!)
+  }
+}
+
+run(); // start the async loop
+
+
+
+// function gravity(shape)
+// {
+//   undraw(shape);
+//   currentposition += width;
+//   render();
+// }
+
+
+//  let shapes = render();
+//  gravity(shapes);
  
 
 
