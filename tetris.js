@@ -1,40 +1,79 @@
 
-const playground = document.querySelector('.playground');
-const width = 10;
-const height = 20;
 
-const cellsarray = [];
+document.addEventListener('keydown', handleKey);
 
-const colors = [
-  '#FF3CAC', 
-  '#784BA0', 
-  '#2B86C5', 
-  '#00F5A0', 
-  '#FFD700', 
-  '#FF6B6B', 
-  '#FF8C00', 
-  '#7FFF00', 
-  '#DA70D6' 
-];
+function handleKey(e) {
+  if (e.key === 'ArrowLeft') {
+    moveLeft();
+  } else if (e.key === 'ArrowRight') {
+    moveRight();
+  } else if (e.key === 'ArrowDown') {
+    moveDown(); // for manual drop
+  }
+}
 
-const colorb = Math.floor(Math.random() * 9);
 
-const totalcells = width * height;
+function moveLeft() {
+  undraw();
+  const atLeftEdge = currentShape.some(index => 
+    (currentPosition + index) % width === 0
+  );
 
-const col = colors[colorb];
+  if (!atLeftEdge) {
+    const canMove = currentShape.every(index =>
+      !cellsArray[currentPosition + index - 1].classList.contains('taken')
+    );
+    if (canMove) currentPosition -= 1;
+  }
 
-for(let i = 0 ; i < totalcells ; i++ )
-{
-    const cells = document.createElement('div');
-    cells.classList.add('cell');
-    playground.appendChild(cells);
-    cellsarray.push(cells);
+  draw();
+}
+
+function moveRight() {
+  undraw();
+  const atRightEdge = currentShape.some(index => 
+    (currentPosition + index) % width === width - 1
+  );
+
+  if (!atRightEdge) {
+    const canMove = currentShape.every(index =>
+      !cellsArray[currentPosition + index + 1].classList.contains('taken')
+    );
+    if (canMove) currentPosition += 1;
+  }
+
+  draw();
 }
 
 
 
 
 
+const playground = document.querySelector('.playground');
+const width = 10;
+const height = 20;
+const totalCells = width * height;
+const cellsArray = [];
+
+const colors = [
+  '#FF3CAC', '#784BA0', '#2B86C5', '#00F5A0',
+  '#FFD700', '#FF6B6B', '#FF8C00', '#7FFF00', '#DA70D6'
+];
+
+// Create grid
+for (let i = 0; i < totalCells; i++) {
+  const cell = document.createElement('div');
+  cell.classList.add('cell');
+  playground.appendChild(cell);
+  cellsArray.push(cell);
+
+  // Mark last row as taken to simulate bottom
+  if (i >= totalCells - width) {
+    cell.classList.add('taken');
+  }
+}
+
+// Tetromino shapes
 const lTetromino = [
   [1, width+1, width*2+1, 2],
   [width, width+1, width+2, width*2+2],
@@ -84,78 +123,77 @@ const sTetromino = [
   [0, width, width+1, width*2+1]
 ];
 
-const theTetrominoes = [lTetromino, zTetromino, tTetromino, oTetromino, iTetromino, jTetromino, sTetromino];
+const theTetrominoes = [
+  lTetromino, zTetromino, tTetromino,
+  oTetromino, iTetromino, jTetromino, sTetromino
+];
 
-let currentposition = 4;
-const hel = Math.floor(Math.random() * 7);
+// Initial state
+let currentPosition = 4;
+let currentRotation = 0;
+let currentShapeIndex = Math.floor(Math.random() * theTetrominoes.length);
+let currentShape = theTetrominoes[currentShapeIndex][currentRotation];
+let currentColor = colors[Math.floor(Math.random() * colors.length)];
 
-function render()
-{
+function draw() {
+  currentShape.forEach(index => {
+    cellsArray[currentPosition + index].classList.add('colored');
+    cellsArray[currentPosition + index].style.backgroundColor = currentColor;
+  });
+}
 
-  let shape = theTetrominoes[hel][0];
-  
-  for(let i = 0 ; i < shape.length ; i++)
-  {
-      cellsarray[shape[i] + currentposition].classList.add('colored');
-      cellsarray[shape[i] + currentposition].style.backgroundColor= col;
+function undraw() {
+  currentShape.forEach(index => {
+    cellsArray[currentPosition + index].classList.remove('colored');
+    cellsArray[currentPosition + index].style.backgroundColor = '';
+  });
+}
+
+function moveDown() {
+  undraw();
+  currentPosition += width;
+  draw();
+  freeze();
+}
+
+function freeze() {
+  const nextPosition = currentPosition + width;
+
+  const atBottom = currentShape.some(index => {
+    const nextIndex = nextPosition + index;
+    return nextIndex >= totalCells || cellsArray[nextIndex].classList.contains('taken');
+  });
+
+  if (atBottom) {
+    currentShape.forEach(index => {
+      cellsArray[currentPosition + index].classList.add('taken');
+    });
+
+    // New shape
+    spawnNewTetromino();
   }
-  return(shape);
 }
 
-// function undraw(shape)
-// {
-//   for(let i = 0 ; i < shape.length ; i++)
-//     {
-//         cellsarray[shape[i] + currentposition].classList.remove('colored');
-//         cellsarray[shape[i] + currentposition].style.backgroundColor= 'none';
-//     }
-//     return(shape);
-// }
+function spawnNewTetromino() {
+  currentPosition = 4;
+  currentRotation = 0;
+  currentShapeIndex = Math.floor(Math.random() * theTetrominoes.length);
+  currentShape = theTetrominoes[currentShapeIndex][currentRotation];
+  currentColor = colors[Math.floor(Math.random() * colors.length)];
 
+  // Game Over check
+  const isGameOver = currentShape.some(index =>
+    cellsArray[currentPosition + index].classList.contains('taken')
+  );
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function run() 
-{
-  let i = 0;
-  const width = 10;
-
-  while (i < 20) {
-    let ships = render();      // draw shape
-    // undraw(ships);         // optional: remove shape
-    currentposition += width;  // move down
-    console.log(currentposition);
-    i++;
-    await sleep(700);          // wait 700ms (not 7 million!)
+  if (isGameOver) {
+    clearInterval(timerId);
+    alert('Game Over');
+  } else {
+    draw();
   }
 }
 
-run(); // start the async loop
-
-
-
-// function gravity(shape)
-// {
-//   undraw(shape);
-//   currentposition += width;
-//   render();
-// }
-
-
-//  let shapes = render();
-//  gravity(shapes);
- 
-
-
-
-
-
-
-// function moveDown() {
-//   undraw();
-//   currentPosition += width;
-//   draw();
-//   freeze(); // check if it hit the bottom or another shape
-// }
+// Start the game
+draw();
+let timerId = setInterval(moveDown, 1000);
